@@ -1,19 +1,24 @@
-function bits = decode_received_signal(y, len)
+function bits = decode_received_signal(y, len, plots)
     % Load constant factors and prep to display
     constants;
     
+    % Fill variables
     if nargin < 2
         len = L; %#ok
     end
-    
-    figure(2); clf(2);
+    if nargin < 3
+        plots = false;
+    end
     
     
     % Display received signal
-    subplot(3,1,1); hold on;
-    plot(imag(y),'g'); plot(real(y));
-    legend('y^Q', 'y^I');
-    title('Raw received signal');
+    if plots
+        figure(2); clf(2);
+        subplot(4,1,1); hold on;
+        plot(imag(y),'g'); plot(real(y));
+        legend('y^Q', 'y^I');
+        title('Raw received signal');
+    end
    
     
     % Determine offset
@@ -21,6 +26,7 @@ function bits = decode_received_signal(y, len)
     [~,delta] = max(abs(corrs));
     delta = delta-1;
     
+    if plots scatter(delta,0,'r.'); end
     
     % Grab pilot sequence, match filter and sample
     p = y(delta : delta + length(pilot)-1);
@@ -36,30 +42,42 @@ function bits = decode_received_signal(y, len)
     L = min(L,len);
     delta = delta + length(pilot);
     y = y(delta : delta + T*L - 1);
+    
+    if plots
+        subplot(4,1,2); hold on;
+        plot(imag(y),'g'); plot(real(y));
+        legend('y^Q', 'y^I');
+        title('Windowed signal');
+    end
+    
+    
+    % Equalize
     y = y/eq;
     
-    subplot(3,1,2); hold on;
-    plot(imag(y),'g'); plot(real(y));
-    legend('y^Q', 'y^I');
-    title('Windowed signal');
+    if plots
+        subplot(4,1,3); hold on;
+        plot(imag(y),'g'); plot(real(y));
+        title('Equalized signal');
+        legend('y^Q', 'y^I');
+    end
     
-    % Equalize, match filter and grab inphase and quadrature components
+    
+    % Match filter, grab inphase and quadrature components, sample
     y = conv(y, pulse(end:-1:1), 'same'); %#ok
     yi = real(y); yq = imag(y);
-    
-    subplot(3,1,3); hold on;
-    plot(yi);
-    title('Filtered signal, inphase only');
-    
-    
-    % Sample
     z = y(T/2:T:end);
+    
+    if plots
+        subplot(4,1,4); hold on;
+        plot(yi);
+        stem(T/2:T:length(y), z, 'ro');
+        title('Filtered signal, inphase only');
+        legend('y^I', 'Sample Points');
+    end
     
     
     % Detect symbols
-    bits = z > 0;
-    
-    
     % Return only the requested symbols
+    bits = z > 0;
     bits = bits(1:len);
 end
