@@ -9,4 +9,8 @@ function y = simulate_channel(x)
     idx = randi(maxdelay);
     y(idx : idx+length(x)-1) = ...
         y(idx : idx+length(x)-1) + x./randi(atten);
+    
+    % Multiply by random angle
+    angle = pi/4*rand();
+    y = y*exp(1j*angle);
 end
