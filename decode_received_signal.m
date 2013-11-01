@@ -22,9 +22,14 @@ function bits = decode_received_signal(y, len)
     delta = delta-1;
     
     
-    % Grab pilot sequence and equalize
+    % Grab pilot sequence, match filter and sample
     p = y(delta : delta + length(pilot)-1);
-    eq = (pilot*transpose(p))/norm(pilot);
+    p = conv(p, pulse(end:-1:1), 'same'); %#ok
+    zs = p(T/2:T:end);
+    
+    % Determine EQ from there
+    ps = 2*pilotBits - 1;
+    eq = (ps*transpose(zs))/(ps*ps');
 
     
     % Drop the offset, pilot and trailing end
