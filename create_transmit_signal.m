@@ -2,6 +2,11 @@ function x = create_transmit_signal(bits)
     % Load constants
     constants;
     
+    figure(1); clf(1);
+    subplot(2,1,1);
+    stem(bits);
+    title('Bits to transmit');
+    
     % Pad bits to full length
     if(length(bits) > L)
         error('Provided packet exceeds max packet size');
@@ -19,4 +24,8 @@ function x = create_transmit_signal(bits)
     
     % Place pilot sequence at head
     x = [pilot x];
+    
+    subplot(2,1,2);
+    plot(x);
+    title('Transmit signal');
 end
