@@ -19,13 +19,13 @@ function x = create_transmit_signal(bits, plots)
     % Display message, pulse and pilot
     if plots
         figure(1); clf(1);
-        subplot(3,1,1); hold on;
+        subplot(4,1,1); hold on;
         stem(bits,'c');
         stem(bits(1:M));
         title('Bits to transmit');
-        legend('Message','Padding');
+        legend('Padding','Message');
         
-        subplot(3,1,2);
+        subplot(4,1,2);
         plot([pulse zeros(1,T/2)]);
         title('Pulse waveform');
     end
@@ -46,10 +46,16 @@ function x = create_transmit_signal(bits, plots)
     x = [pilot x];
     
     if plots
-        subplot(3,1,3); hold on;
+        subplot(4,1,3); hold on;
         plot(x);
         plot(pilot,'c');
         title('Transmit signal');
-        legend('Pilot','Message');
+        legend('Message','Pilot');
+        
+        spec = fftshift(fft(x));
+        subplot(4,1,4); hold on;
+        plot(linspace(-pi,pi,length(spec)),20*log10(abs(spec)));
+        title('Transmit spectrum');
+        xlabel('\omega'); ylabel('Spectral power (dB)');
     end
 end

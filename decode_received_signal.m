@@ -18,6 +18,13 @@ function bits = decode_received_signal(y, len, plots)
         plot(imag(y),'g'); plot(real(y));
         legend('y^Q', 'y^I');
         title('Raw received signal');
+        
+        figure(3); clf(3);
+        subplot(2,1,1); hold on;
+        spec = fftshift(fft(y));
+        plot(linspace(-pi,pi,length(spec)),20*log10(abs(spec)));
+        title('Received signal spectrum');
+        xlabel('\omega'); ylabel('Spectral power (dB)');
     end
    
     
@@ -26,7 +33,7 @@ function bits = decode_received_signal(y, len, plots)
     [~,delta] = max(abs(corrs));
     delta = delta-1;
     
-    if plots scatter(delta,0,'r.'); end
+    if plots; figure(2); scatter(delta,0,'r.'); end
     
     % Grab pilot sequence, match filter and sample
     p = y(delta : delta + length(pilot)-1);
@@ -73,6 +80,13 @@ function bits = decode_received_signal(y, len, plots)
         stem(T/2:T:length(y), z, 'ro');
         title('Filtered signal, inphase only');
         legend('y^I', 'Sample Points');
+        
+        figure(3);
+        subplot(2,1,2); hold on;
+        spec = fftshift(fft(y));
+        plot(linspace(-pi,pi,length(spec)),20*log10(abs(spec)));
+        title('Filtered signal spectrum');
+        xlabel('\omega'); ylabel('Spectral power (dB)');
     end
     
     
