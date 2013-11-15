@@ -46,7 +46,7 @@ function bits = decode_received_signal(y, len, plots)
 
     
     % Drop the offset, pilot and trailing end
-    L = min(L,len);
+    L = min(L,len)/2;
     delta = delta + length(pilot);
     y = y(delta+1 : delta + T*L);
     

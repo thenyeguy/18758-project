@@ -9,8 +9,8 @@ maxL = 10000; % max samples in output signal
 
 
 % Transmit constants
-T = 10;  % samples per symbol
-L = 200; % packet size in symbols
+T = 4;  % samples per symbol
+L = 3036; % packet size in symbols
 
 
 % Hamming pulse for modulation. Normalize to unit energy

@@ -59,4 +59,9 @@ function x = create_transmit_signal(bits, plots)
         title('Transmit spectrum');
         xlabel('\omega'); ylabel('Spectral power (dB)');
     end
+    
+    
+    if(length(x) > maxL)
+        error('Computed message exceeds maximum message size');
+    end
 end
