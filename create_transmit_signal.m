@@ -26,7 +26,7 @@ function x = create_transmit_signal(bits, plots)
         legend('Padding','Message');
         
         subplot(4,1,2);
-        plot([pulse zeros(1,T/2)]);
+        stem(pulse);
         title('Pulse waveform');
     end
     
@@ -37,8 +37,7 @@ function x = create_transmit_signal(bits, plots)
     
     
     % Expand in time and convolve with pulse sequence
-    x = zeros(1,T*length(syms));
-    x(1:T:end) = syms;
+    x = upsample(syms,T);
     x = conv(x,pulse);
     
     
@@ -54,7 +53,7 @@ function x = create_transmit_signal(bits, plots)
         
         spec = fftshift(fft(x));
         subplot(4,1,4); hold on;
-        plot(linspace(-pi,pi,length(spec)),20*log10(abs(spec)));
+        plot(linspace(-pi,pi,length(spec)),20*log10(abs(spec)+.01));
         title('Transmit spectrum');
         xlabel('\omega'); ylabel('Spectral power (dB)');
     end

@@ -14,7 +14,8 @@ L = 50; % packet size in symbols
 
 
 % Rectangular pulse for modulation. Normalize to unit energy
-pulse = ones(1,T/2);
+%pulse = ones(1,T/2);
+pulse = hamming(T)';
 pulse = pulse/norm(pulse);
 
 
@@ -23,9 +24,11 @@ pulse = pulse/norm(pulse);
 pilotBits = [0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, ...
              0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1];
 
-pilot = zeros(1,T*length(pilotBits));
-pilot(1:T:end) = 2*pilotBits-1;
-pilot = conv(pilot,pulse);
+pilotT = 10;
+pilotPulse = ones(1,pilotT/2); pilotPulse = pilotPulse/norm(pilotPulse);
+
+pilot = upsample(2*pilotBits-1,pilotT);
+pilot = conv(pilot,pilotPulse);
 
 
 % Channel constants for simulation

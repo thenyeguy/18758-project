@@ -29,16 +29,16 @@ function bits = decode_received_signal(y, len, plots)
    
     
     % Determine offset
-    corrs = fftshift(xcorr(y,pilot));
-    [~,delta] = max(abs(corrs));
-    delta = delta-1;
+    [corrs,lags] = xcorr(y,pilot);
+    [~,I] = max(abs(corrs));
+    delta = lags(I);
     
-    if plots; figure(2); scatter(delta,0,'r.'); end
+    if plots; figure(2); scatter(delta,y(delta),'r.'); end
     
     % Grab pilot sequence, match filter and sample
-    p = y(delta : delta + length(pilot)-1);
-    p = conv(p, pulse(end:-1:1), 'same'); %#ok
-    zs = p(T/2:T:end);
+    p = y(delta+1 : delta + length(pilot));
+    p = filter(pilotPulse(end:-1:1), 1, p); %#ok
+    zs = p(pilotT/2:pilotT:end);
     
     % Determine EQ from there
     ps = 2*pilotBits - 1;
@@ -48,7 +48,7 @@ function bits = decode_received_signal(y, len, plots)
     % Drop the offset, pilot and trailing end
     L = min(L,len);
     delta = delta + length(pilot);
-    y = y(delta : delta + T*L - 1);
+    y = y(delta+1 : delta + T*L);
     
     if plots
         subplot(4,1,2); hold on;
@@ -70,14 +70,14 @@ function bits = decode_received_signal(y, len, plots)
     
     
     % Match filter, grab inphase and quadrature components, sample
-    y = conv(y, pulse(end:-1:1), 'same'); %#ok
+    y = conv(y, pulse(end:-1:1)); %#ok
     yi = real(y); yq = imag(y);
-    z = y(T/2:T:end);
+    z = y(T:T:end);
     
     if plots
         subplot(4,1,4); hold on;
         plot(yi);
-        stem(T/2:T:length(y), z, 'ro');
+        stem(T:T:length(y), z, 'ro');
         title('Filtered signal, inphase only');
         legend('y^I', 'Sample Points');
         
