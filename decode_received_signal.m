@@ -71,15 +71,16 @@ function bits = decode_received_signal(y, len, plots)
     
     % Match filter, grab inphase and quadrature components, sample
     y = conv(y, pulse(end:-1:1)); %#ok
-    yi = real(y); yq = imag(y);
-    z = y(T:T:end);
+    yi = real(y);     yq = imag(y);
+    zi = yi(T:T:end); zq = yq(T:T:end);
     
     if plots
         subplot(4,1,4); hold on;
-        plot(yi);
-        stem(T:T:length(y), z, 'ro');
+        plot(yq, 'g'); plot(yi);
+        stem(T:T:length(y), zq, 'cx');
+        stem(T:T:length(y), zi, 'ro');
         title('Filtered signal, inphase only');
-        legend('y^I', 'Sample Points');
+        legend('y^Q', 'y^I', 'z^Q', 'z^I');
         
         figure(3);
         subplot(2,1,2); hold on;
@@ -91,7 +92,11 @@ function bits = decode_received_signal(y, len, plots)
     
     
     % Detect symbols
+    oddbits = zi > 0; evenbits = zq > 0;
+    bits = zeros(1,length(oddbits) + length(evenbits));
+    bits(1:2:end) = oddbits;
+    bits(2:2:end) = evenbits;
+    
     % Return only the requested symbols
-    bits = z > 0;
     bits = bits(1:len);
 end

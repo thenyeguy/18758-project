@@ -10,11 +10,10 @@ maxL = 10000; % max samples in output signal
 
 % Transmit constants
 T = 10;  % samples per symbol
-L = 50; % packet size in symbols
+L = 200; % packet size in symbols
 
 
-% Rectangular pulse for modulation. Normalize to unit energy
-%pulse = ones(1,T/2);
+% Hamming pulse for modulation. Normalize to unit energy
 pulse = hamming(T)';
 pulse = pulse/norm(pulse);
 

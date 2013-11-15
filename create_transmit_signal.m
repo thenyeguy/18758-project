@@ -32,8 +32,10 @@ function x = create_transmit_signal(bits, plots)
     
     
     % Map to symbols
-    % Uses BPSK (i.e. +/- 1)
-    syms = 2*bits-1;
+    % Uses 4QAM, by assining odd bits to the real components and even bits
+    % to the imaginary components
+    bits = 2*bits-1;
+    syms = bits(1:2:end) + 1j*bits(2:2:end);
     
     
     % Expand in time and convolve with pulse sequence
@@ -46,10 +48,10 @@ function x = create_transmit_signal(bits, plots)
     
     if plots
         subplot(4,1,3); hold on;
-        plot(x);
+        plot(imag(x),'g'); plot(real(x));
         plot(pilot,'c');
         title('Transmit signal');
-        legend('Message','Pilot');
+        legend('x^Q', 'x^I','Pilot');
         
         spec = fftshift(fft(x));
         subplot(4,1,4); hold on;
