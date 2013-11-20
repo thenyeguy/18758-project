@@ -13,6 +13,7 @@ T = 6;  % samples per symbol
 B = 4;  % bits per symbol
 R = 2;  % coded bits per data bit
 L = 3036; % packet size in symbols
+interleaveA = 132; interleaveB = R*23; % Factors of interleaving
 
 coded = true;
 if ~coded, R=1; end;

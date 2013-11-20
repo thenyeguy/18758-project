@@ -27,7 +27,7 @@ function [x,codedbits] = create_transmit_signal(bits, plots)
     % Generate coded bits from the input
     % Uses a 4-state rate 1/2 convolutional code
     if coded
-        codedbits = zeros(1,2*length(bits));
+        codedbits = zeros(1,R*length(bits));
         state = [0 0];
         for ii=1:length(bits)
             % Get the current data bit
@@ -47,6 +47,10 @@ function [x,codedbits] = create_transmit_signal(bits, plots)
             % Update the state
             state = [state(2) bit];
         end
+        
+        % Interleave the coded bits
+        codedbits = reshape(codedbits,interleaveA,interleaveB)';
+        codedbits = codedbits(:)';
     else
         codedbits = bits;
     end

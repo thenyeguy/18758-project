@@ -115,6 +115,11 @@ function [bits,detectedbits] = decode_received_signal(y, len, plots)
     
     % Correct the coded bits using viterbi
     if coded
+        % Deinterleave the received bits
+        detectedbits = reshape(detectedbits,interleaveB,interleaveA)';
+        detectedbits = detectedbits(:)';
+        
+        
         % Create empty trelli
         oldtrellis = struct('errors', {0, Inf, Inf, Inf}, ...
                             'bits', {[], [], [], []});
