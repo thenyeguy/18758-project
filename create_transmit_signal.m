@@ -1,4 +1,4 @@
-function x = create_transmit_signal(bits, plots)
+function [x,codedbits] = create_transmit_signal(bits, plots)
     % Load constants
     constants;
     
@@ -26,39 +26,45 @@ function x = create_transmit_signal(bits, plots)
     
     % Generate coded bits from the input
     % Uses a 4-state rate 1/2 convolutional code
-    codedbits = zeros(1,2*length(bits));
-    state = [0 0];
-    for ii=1:length(bits)
-        % Get the current data bit
-        bit = bits(ii);
-        
-        % Add the coded bits depending on the state
-        if isequal(state, [0 0])
-            codedbits(2*ii-1 : 2*ii) = xor(bit, [0 0]);
-        elseif isequal(state, [0 1])
-            codedbits(2*ii-1 : 2*ii) = xor(bit, [1 0]);
-        elseif isequal(state, [1 0])
-            codedbits(2*ii-1 : 2*ii) = xor(bit, [1 1]);
-        else % isequal(state, [1 1])
-            codedbits(2*ii-1 : 2*ii) = xor(bit, [0 1]);
+    if coded
+        codedbits = zeros(1,2*length(bits));
+        state = [0 0];
+        for ii=1:length(bits)
+            % Get the current data bit
+            bit = bits(ii);
+
+            % Add the coded bits depending on the state
+            if isequal(state, [0 0])
+                codedbits(2*ii-1 : 2*ii) = xor(bit, [0 0]);
+            elseif isequal(state, [0 1])
+                codedbits(2*ii-1 : 2*ii) = xor(bit, [1 0]);
+            elseif isequal(state, [1 0])
+                codedbits(2*ii-1 : 2*ii) = xor(bit, [1 1]);
+            else % isequal(state, [1 1])
+                codedbits(2*ii-1 : 2*ii) = xor(bit, [0 1]);
+            end
+
+            % Update the state
+            state = [state(2) bit];
         end
-        
-        % Update the state
-        state = [state(2) bit];
+    else
+        codedbits = bits;
     end
     
     if plots
         subplot(4,1,2);
-        stem(codedbits(1:2*M));
+        stem(codedbits(1:R*M));
         title('Coded bits');
     end
     
-    
     % Map coded bits to symbols
-    % Uses 4QAM, by assining odd bits to the real components and even bits
-    % to the imaginary components
-    syms = 2*codedbits-1;
-    syms = syms(1:2:end) + 1j*syms(2:2:end);
+    % Uses 16QAM, by assigning cyclically assigning 2 bits to the real part
+    % and 2 bits to the imaginary part
+    expanded = 2*codedbits-1;
+    bits1 = expanded(1:4:end); bits2 = expanded(2:4:end);
+    bits3 = expanded(3:4:end); bits4 = expanded(4:4:end);
+    
+    syms = (2/3*bits1 + 1/3*bits2) + 1j*(2/3*bits3 + 1/3*bits4);
     
     
     % Expand in time and convolve with pulse sequence
@@ -71,16 +77,25 @@ function x = create_transmit_signal(bits, plots)
     
     if plots
         subplot(4,1,3); hold on;
+        stem(0,'marker','none');
         plot(imag(x),'g'); plot(real(x));
         plot(pilot,'c');
         title('Transmit signal');
-        legend('x^Q', 'x^I','Pilot');
+        legend('x^Q', 'x^I','Pilot', 'Location','NorthWest');
         
         spec = fftshift(fft(x));
-        subplot(4,1,4); hold on;
+        subplot(4,3,10:11); hold on;
         plot(linspace(-pi,pi,length(spec)),20*log10(abs(spec)+.01));
         title('Transmit spectrum');
         xlabel('\omega'); ylabel('Spectral power (dB)');
+        
+        subplot(4,3,12); hold on;
+        plot([-2 2],[0 0], 'k');
+        plot([0 1e-10], [-2 2], 'k');
+        scatter(real(syms), imag(syms), 'bx');
+        axis([-1.5 1.5 -1.5 1.5]); axis square;
+        title('Signal space');
+        xlabel('x^I'); ylabel('x^Q');
     end
     
     

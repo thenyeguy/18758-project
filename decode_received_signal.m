@@ -1,4 +1,4 @@
-function bits = decode_received_signal(y, len, plots)
+function [bits,detectedbits] = decode_received_signal(y, len, plots)
     % Load constant factors and prep to display
     constants;
     
@@ -15,6 +15,7 @@ function bits = decode_received_signal(y, len, plots)
     if plots
         figure(2); clf(2);
         subplot(4,1,1); hold on;
+        stem(0,'marker','none');
         plot(imag(y),'g'); plot(real(y));
         legend('y^Q', 'y^I');
         title('Raw received signal');
@@ -23,7 +24,7 @@ function bits = decode_received_signal(y, len, plots)
         subplot(2,1,1); hold on;
         spec = fftshift(fft(y));
         plot(linspace(-pi,pi,length(spec)),20*log10(abs(spec)));
-        title('Received signal spectrum');
+        title('Signal Spectra');
         xlabel('\omega'); ylabel('Spectral power (dB)');
     end
    
@@ -46,12 +47,13 @@ function bits = decode_received_signal(y, len, plots)
 
     
     % Drop the offset, pilot and trailing end
-    L = min(L,len)*R/M; % number of bits to read in 
+    L = min(L,len)*R/M; % number of symbols to read in 
     delta = delta + length(pilot);
     y = y(delta+1 : delta + T*L);
     
     if plots
         subplot(4,1,2); hold on;
+        stem(0,'marker','none');
         plot(imag(y),'g'); plot(real(y));
         legend('y^Q', 'y^I');
         title('Windowed signal');
@@ -63,6 +65,7 @@ function bits = decode_received_signal(y, len, plots)
     
     if plots
         subplot(4,1,3); hold on;
+        stem(0,'marker','none');
         plot(imag(y),'g'); plot(real(y));
         title('Equalized signal');
         legend('y^Q', 'y^I');
@@ -76,6 +79,7 @@ function bits = decode_received_signal(y, len, plots)
     
     if plots
         subplot(4,1,4); hold on;
+        stem(0,'marker','none');
         plot(yq, 'g'); plot(yi);
         stem(T:T:length(y), zq, 'cx');
         stem(T:T:length(y), zi, 'ro');
@@ -83,105 +87,123 @@ function bits = decode_received_signal(y, len, plots)
         legend('y^Q', 'y^I', 'z^Q', 'z^I');
         
         figure(3);
-        subplot(2,1,2); hold on;
+        subplot(2,1,1); hold on;
         spec = fftshift(fft(y));
-        plot(linspace(-pi,pi,length(spec)),20*log10(abs(spec)));
-        title('Filtered signal spectrum');
-        xlabel('\omega'); ylabel('Spectral power (dB)');
+        plot(linspace(-pi,pi,length(spec)),20*log10(abs(spec)),'r');
+        legend('Received spectrum','Filtered spectrum');
+        
+        subplot(2,1,2); hold on;
+        plot([-2 2],[0 0], 'k');
+        plot([0 1e-10], [-2 2], 'k');
+        scatter(zi, zq, 'bx');
+        scatter([-1 -1 -1 -1 -1/3 -1/3 -1/3 -1/3 1/3 1/3 1/3 1/3 1 1 1 1], ...
+                [-1 -1/3 1/3 1 -1 -1/3 1/3 1 -1 -1/3 1/3 1 -1 -1/3 1/3 1], ...
+                'ro', 'MarkerFaceColor','r');
+        axis([-1.5 1.5 -1.5 1.5]); axis square;
+        title('Signal space');
+        xlabel('x^I'); ylabel('x^Q');
     end
     
     
-    % Hard detect the coded symbols
-    oddbits = zi > 0; evenbits = zq > 0;
-    detectedbits = zeros(1,length(oddbits) + length(evenbits));
-    detectedbits(1:2:end) = oddbits;
-    detectedbits(2:2:end) = evenbits;
+    % Hard detect the coded symbols from 16QAM
+    bits1 = zi > 0; bits2 = (zi - 2/3*(2*bits1-1)) > 0;
+    bits3 = zq > 0; bits4 = (zq - 2/3*(2*bits3-1)) > 0;
+    detectedbits = zeros(1,length(bits1) + length(bits2) + ...
+                           length(bits3) + length(bits4));
+    detectedbits(1:4:end) = bits1;
+    detectedbits(2:4:end) = bits2;
+    detectedbits(3:4:end) = bits3;
+    detectedbits(4:4:end) = bits4;
     
     
-    % Correct the coded bits using viterbi    
-    % Create empty trelli
-    oldtrellis = struct('errors', {0, Inf, Inf, Inf}, ...
-                        'bits', {[], [], [], []});
-    newtrellis = struct('errors', {0, 0, 0, 0}, ...
-                        'bits', {[], [], [], []});
-                    
-    % Score the whole trellis
-    for ii=1:2:length(detectedbits)
-        bits = detectedbits(ii:ii+1);
-        
-        % State 00
-        error1 = oldtrellis(1).errors + sum(bits ~= [0 0]);
-        error2 = oldtrellis(3).errors + sum(bits ~= [1 1]);
-        if error1 < error2
-            newtrellis(1).errors = error1;
-            newtrellis(1).bits = [oldtrellis(1).bits 0 0];
-        else
-            newtrellis(1).errors = error2;
-            newtrellis(1).bits = [oldtrellis(3).bits 1 1];
+    % Correct the coded bits using viterbi
+    if coded
+        % Create empty trelli
+        oldtrellis = struct('errors', {0, Inf, Inf, Inf}, ...
+                            'bits', {[], [], [], []});
+        newtrellis = struct('errors', {0, 0, 0, 0}, ...
+                            'bits', {[], [], [], []});
+
+        % Score the whole trellis
+        for ii=1:2:length(detectedbits)
+            bits = detectedbits(ii:ii+1);
+
+            % State 00
+            error1 = oldtrellis(1).errors + sum(bits ~= [0 0]);
+            error2 = oldtrellis(3).errors + sum(bits ~= [1 1]);
+            if error1 < error2
+                newtrellis(1).errors = error1;
+                newtrellis(1).bits = [oldtrellis(1).bits 0 0];
+            else
+                newtrellis(1).errors = error2;
+                newtrellis(1).bits = [oldtrellis(3).bits 1 1];
+            end
+
+            % State 01
+            error1 = oldtrellis(1).errors + sum(bits ~= [1 1]);
+            error2 = oldtrellis(3).errors + sum(bits ~= [0 0]);
+            if error1 < error2
+                newtrellis(2).errors = error1;
+                newtrellis(2).bits = [oldtrellis(1).bits 1 1];
+            else
+                newtrellis(2).errors = error2;
+                newtrellis(2).bits = [oldtrellis(3).bits 0 0];
+            end
+
+            % State 11
+            error1 = oldtrellis(2).errors + sum(bits ~= [1 0]);
+            error2 = oldtrellis(4).errors + sum(bits ~= [0 1]);
+            if error1 < error2
+                newtrellis(3).errors = error1;
+                newtrellis(3).bits = [oldtrellis(2).bits 1 0];
+            else
+                newtrellis(3).errors = error2;
+                newtrellis(3).bits = [oldtrellis(4).bits 0 1];
+            end
+
+            % State 10
+            error1 = oldtrellis(2).errors + sum(bits ~= [0 1]);
+            error2 = oldtrellis(4).errors + sum(bits ~= [1 0]);
+            if error1 < error2
+                newtrellis(4).errors = error1;
+                newtrellis(4).bits = [oldtrellis(2).bits 0 1];
+            else
+                newtrellis(4).errors = error2;
+                newtrellis(4).bits = [oldtrellis(4).bits 1 0];
+            end
+
+            % Make the new trellis the old trellis and continue
+            oldtrellis = newtrellis;
         end
-        
-        % State 01
-        error1 = oldtrellis(1).errors + sum(bits ~= [1 1]);
-        error2 = oldtrellis(3).errors + sum(bits ~= [0 0]);
-        if error1 < error2
-            newtrellis(2).errors = error1;
-            newtrellis(2).bits = [oldtrellis(1).bits 1 1];
-        else
-            newtrellis(2).errors = error2;
-            newtrellis(2).bits = [oldtrellis(3).bits 0 0];
-        end
-        
-        % State 11
-        error1 = oldtrellis(2).errors + sum(bits ~= [1 0]);
-        error2 = oldtrellis(4).errors + sum(bits ~= [0 1]);
-        if error1 < error2
-            newtrellis(3).errors = error1;
-            newtrellis(3).bits = [oldtrellis(2).bits 1 0];
-        else
-            newtrellis(3).errors = error2;
-            newtrellis(3).bits = [oldtrellis(4).bits 0 1];
-        end
-        
-        % State 10
-        error1 = oldtrellis(2).errors + sum(bits ~= [0 1]);
-        error2 = oldtrellis(4).errors + sum(bits ~= [1 0]);
-        if error1 < error2
-            newtrellis(4).errors = error1;
-            newtrellis(4).bits = [oldtrellis(2).bits 0 1];
-        else
-            newtrellis(4).errors = error2;
-            newtrellis(4).bits = [oldtrellis(4).bits 1 0];
-        end
-        
-        % Make the new trellis the old trellis and continue
-        oldtrellis = newtrellis;
-    end
+
+        % Select the lowest error path
+        [~,I] = min([oldtrellis.errors]);
+        codedbits = oldtrellis(I).bits;
     
-    % Select the lowest error path
-    [~,I] = min([oldtrellis.errors]);
-    codedbits = oldtrellis(I).bits;
     
-    
-    % Decode the found bits
-    bits = zeros(1,length(codedbits)/2);
-    state = [0 0];
-    for ii=1:length(bits)
-        % Get the current coded bits
-        cbits = codedbits(2*ii-1 : 2*ii);
-        
-        % Find the data bit depending on the state
-        if isequal(state, [0 0])
-            bits(ii) = isequal(cbits, [1 1]);
-        elseif isequal(state, [0 1])
-            bits(ii) = isequal(cbits, [0 1]);
-        elseif isequal(state, [1 0])
-            bits(ii) = isequal(cbits, [0 0]);
-        else % isequal(state, [1 1])
-            bits(ii) = isequal(cbits, [1 0]);
+        % Decode the found bits
+        bits = zeros(1,length(codedbits)/R);
+        state = [0 0];
+        for ii=1:length(bits)
+            % Get the current coded bits
+            cbits = codedbits(2*ii-1 : 2*ii);
+
+            % Find the data bit depending on the state
+            if isequal(state, [0 0])
+                bits(ii) = isequal(cbits, [1 1]);
+            elseif isequal(state, [0 1])
+                bits(ii) = isequal(cbits, [0 1]);
+            elseif isequal(state, [1 0])
+                bits(ii) = isequal(cbits, [0 0]);
+            else % isequal(state, [1 1])
+                bits(ii) = isequal(cbits, [1 0]);
+            end
+
+            % Update the state
+            state = [state(2) bits(ii)];
         end
-        
-        % Update the state
-        state = [state(2) bits(ii)];
+    else
+        bits = detectedbits;
     end
     
     
