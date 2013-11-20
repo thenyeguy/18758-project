@@ -11,15 +11,15 @@ function [x,codedbits] = create_transmit_signal(bits, plots)
     if(length(bits) > L)
         error('Provided packet exceeds max packet size');
     end
-    M = length(bits);
-    bits = [bits zeros(1,L-M)];
+    N = length(bits);
+    bits = [bits zeros(1,L-N)];
     
     
     % Display message, pulse and pilot
     if plots
         figure(1); clf(1);
         subplot(4,1,1);
-        stem(bits(1:M));
+        stem(bits(1:N));
         title('Uncoded message');
     end
     
@@ -53,18 +53,15 @@ function [x,codedbits] = create_transmit_signal(bits, plots)
     
     if plots
         subplot(4,1,2);
-        stem(codedbits(1:R*M));
+        stem(codedbits(1:R*N));
         title('Coded bits');
     end
     
     % Map coded bits to symbols
-    % Uses 16QAM, by assigning cyclically assigning 2 bits to the real part
-    % and 2 bits to the imaginary part
-    expanded = 2*codedbits-1;
-    bits1 = expanded(1:4:end); bits2 = expanded(2:4:end);
-    bits3 = expanded(3:4:end); bits4 = expanded(4:4:end);
-    
-    syms = (2/3*bits1 + 1/3*bits2) + 1j*(2/3*bits3 + 1/3*bits4);
+    % Uses 16PSK
+    M = 2^B;
+    ints = bi2de(reshape(codedbits,B,length(codedbits)/B)')';
+    syms = exp(2*pi*1j*ints/M);
     
     
     % Expand in time and convolve with pulse sequence

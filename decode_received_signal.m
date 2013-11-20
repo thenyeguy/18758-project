@@ -47,7 +47,7 @@ function [bits,detectedbits] = decode_received_signal(y, len, plots)
 
     
     % Drop the offset, pilot and trailing end
-    L = min(L,len)*R/M; % number of symbols to read in 
+    L = min(L,len)*R/B; % number of symbols to read in 
     delta = delta + length(pilot);
     y = y(delta+1 : delta + T*L);
     
@@ -96,8 +96,8 @@ function [bits,detectedbits] = decode_received_signal(y, len, plots)
         plot([-2 2],[0 0], 'k');
         plot([0 1e-10], [-2 2], 'k');
         scatter(zi, zq, 'bx');
-        scatter([-1 -1 -1 -1 -1/3 -1/3 -1/3 -1/3 1/3 1/3 1/3 1/3 1 1 1 1], ...
-                [-1 -1/3 1/3 1 -1 -1/3 1/3 1 -1 -1/3 1/3 1 -1 -1/3 1/3 1], ...
+        scatter(real(exp(2*pi*1j*(0:(2^B-1))/2^B)), ...
+                imag(exp(2*pi*1j*(0:(2^B-1))/2^B)), ...
                 'ro', 'MarkerFaceColor','r');
         axis([-1.5 1.5 -1.5 1.5]); axis square;
         title('Signal space');
@@ -105,15 +105,12 @@ function [bits,detectedbits] = decode_received_signal(y, len, plots)
     end
     
     
-    % Hard detect the coded symbols from 16QAM
-    bits1 = zi > 0; bits2 = (zi - 2/3*(2*bits1-1)) > 0;
-    bits3 = zq > 0; bits4 = (zq - 2/3*(2*bits3-1)) > 0;
-    detectedbits = zeros(1,length(bits1) + length(bits2) + ...
-                           length(bits3) + length(bits4));
-    detectedbits(1:4:end) = bits1;
-    detectedbits(2:4:end) = bits2;
-    detectedbits(3:4:end) = bits3;
-    detectedbits(4:4:end) = bits4;
+    % Hard detect the coded symbols from MPSK
+    M = 2^B;
+    angs = angle(zi + 1j*zq);
+    decs = mod(round(angs*M/(2*pi)),16);
+    detectedbits = de2bi(decs,4)';
+    detectedbits = detectedbits(:)';
     
     
     % Correct the coded bits using viterbi

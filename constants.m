@@ -10,7 +10,7 @@ maxL = 10000; % max samples in output signal
 
 % Transmit constants
 T = 6;  % samples per symbol
-M = 4;  % bits per symbol
+B = 4;  % bits per symbol
 R = 2;  % coded bits per data bit
 L = 3036; % packet size in symbols
 
@@ -36,7 +36,7 @@ pilot = conv(pilot,pilotPulse);
 
 
 % Channel constants for simulation
-SNR = 3; % dB
+SNR = 6; % dB
 Ex = 1; % expected symbol energy
 sigN = Ex / 10.^(SNR/10); % noise variance
 
