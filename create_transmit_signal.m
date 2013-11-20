@@ -7,7 +7,6 @@ function x = create_transmit_signal(bits, plots)
         plots = false;
     end
     
-    
     % Pad bits to full length
     if(length(bits) > L)
         error('Provided packet exceeds max packet size');
@@ -19,23 +18,47 @@ function x = create_transmit_signal(bits, plots)
     % Display message, pulse and pilot
     if plots
         figure(1); clf(1);
-        subplot(4,1,1); hold on;
-        stem(bits,'c');
+        subplot(4,1,1);
         stem(bits(1:M));
-        title('Bits to transmit');
-        legend('Padding','Message');
-        
-        subplot(4,1,2);
-        stem(pulse);
-        title('Pulse waveform');
+        title('Uncoded message');
     end
     
     
-    % Map to symbols
+    % Generate coded bits from the input
+    % Uses a 4-state rate 1/2 convolutional code
+    codedbits = zeros(1,2*length(bits));
+    state = [0 0];
+    for ii=1:length(bits)
+        % Get the current data bit
+        bit = bits(ii);
+        
+        % Add the coded bits depending on the state
+        if isequal(state, [0 0])
+            codedbits(2*ii-1 : 2*ii) = xor(bit, [0 0]);
+        elseif isequal(state, [0 1])
+            codedbits(2*ii-1 : 2*ii) = xor(bit, [1 0]);
+        elseif isequal(state, [1 0])
+            codedbits(2*ii-1 : 2*ii) = xor(bit, [1 1]);
+        else % isequal(state, [1 1])
+            codedbits(2*ii-1 : 2*ii) = xor(bit, [0 1]);
+        end
+        
+        % Update the state
+        state = [state(2) bit];
+    end
+    
+    if plots
+        subplot(4,1,2);
+        stem(codedbits(1:2*M));
+        title('Coded bits');
+    end
+    
+    
+    % Map coded bits to symbols
     % Uses 4QAM, by assining odd bits to the real components and even bits
     % to the imaginary components
-    bits = 2*bits-1;
-    syms = bits(1:2:end) + 1j*bits(2:2:end);
+    syms = 2*codedbits-1;
+    syms = syms(1:2:end) + 1j*syms(2:2:end);
     
     
     % Expand in time and convolve with pulse sequence

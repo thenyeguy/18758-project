@@ -9,7 +9,9 @@ maxL = 10000; % max samples in output signal
 
 
 % Transmit constants
-T = 4;  % samples per symbol
+T = 2;  % samples per symbol
+M = 2;  % bits per symbol
+R = 2;  % coded bits per data bit
 L = 3036; % packet size in symbols
 
 
@@ -35,5 +37,5 @@ SNR = 20;                 % dB
 Ex = 1;                   % expected symbol energy
 sigN = Ex / 10.^(SNR/10); % noise variance
 
-maxdelay = 2000; % max delay before transmit in samples
+maxdelay = 500; % max delay before transmit in samples
 atten = [2 10]; % factor of attenuation during transmit
