@@ -36,8 +36,8 @@ pilot = conv(pilot,pilotPulse);
 
 
 % Channel constants for simulation
-SNR = 3;                  % dB
-Ex = 1;                   % expected symbol energy
+SNR = 3; % dB
+Ex = 1; % expected symbol energy
 sigN = Ex / 10.^(SNR/10); % noise variance
 
 maxdelay = 500; % max delay before transmit in samples

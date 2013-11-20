@@ -77,11 +77,11 @@ function [x,codedbits] = create_transmit_signal(bits, plots)
     
     if plots
         subplot(4,1,3); hold on;
-        stem(0,'marker','none');
         plot(imag(x),'g'); plot(real(x));
         plot(pilot,'c');
         title('Transmit signal');
         legend('x^Q', 'x^I','Pilot', 'Location','NorthWest');
+        stem(0,'marker','none');
         
         spec = fftshift(fft(x));
         subplot(4,3,10:11); hold on;

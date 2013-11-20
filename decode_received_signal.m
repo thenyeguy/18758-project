@@ -15,10 +15,10 @@ function [bits,detectedbits] = decode_received_signal(y, len, plots)
     if plots
         figure(2); clf(2);
         subplot(4,1,1); hold on;
-        stem(0,'marker','none');
         plot(imag(y),'g'); plot(real(y));
         legend('y^Q', 'y^I');
         title('Raw received signal');
+        stem(0,'marker','none');
         
         figure(3); clf(3);
         subplot(2,1,1); hold on;
@@ -53,10 +53,10 @@ function [bits,detectedbits] = decode_received_signal(y, len, plots)
     
     if plots
         subplot(4,1,2); hold on;
-        stem(0,'marker','none');
         plot(imag(y),'g'); plot(real(y));
         legend('y^Q', 'y^I');
         title('Windowed signal');
+        stem(0,'marker','none');
     end
     
     
@@ -65,10 +65,10 @@ function [bits,detectedbits] = decode_received_signal(y, len, plots)
     
     if plots
         subplot(4,1,3); hold on;
-        stem(0,'marker','none');
         plot(imag(y),'g'); plot(real(y));
         title('Equalized signal');
         legend('y^Q', 'y^I');
+        stem(0,'marker','none');
     end
     
     
@@ -79,12 +79,12 @@ function [bits,detectedbits] = decode_received_signal(y, len, plots)
     
     if plots
         subplot(4,1,4); hold on;
-        stem(0,'marker','none');
         plot(yq, 'g'); plot(yi);
         stem(T:T:length(y), zq, 'cx');
         stem(T:T:length(y), zi, 'ro');
         title('Filtered signal, inphase only');
         legend('y^Q', 'y^I', 'z^Q', 'z^I');
+        stem(0,'marker','none');
         
         figure(3);
         subplot(2,1,1); hold on;
