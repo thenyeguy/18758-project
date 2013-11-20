@@ -36,7 +36,8 @@ function [bits,detectedbits] = decode_received_signal(y, len, plots)
     
     if plots; figure(2); scatter(delta,y(delta),'r.'); end
     
-    % Grab pilot sequence, match filter and sample
+    
+    % Regrab pilot sequence, then match filter and sample
     p = y(delta+1 : delta + length(pilot));
     p = filter(pilotPulse(end:-1:1), 1, p); %#ok
     zs = p(pilotT/2:pilotT:end);

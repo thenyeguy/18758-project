@@ -99,7 +99,10 @@ function [x,codedbits] = create_transmit_signal(bits, plots)
         xlabel('x^I'); ylabel('x^Q');
     end
     
+    % Normaliae x to maximize power
+    x = x/max(x);
     
+    % Error if x is too large
     if(length(x) > maxL)
         error('Computed message exceeds maximum message size');
     end

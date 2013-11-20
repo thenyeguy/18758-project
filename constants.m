@@ -9,13 +9,15 @@ maxL = 10000; % max samples in output signal
 
 
 % Transmit constants
-T = 6;  % samples per symbol
+T = 4;  % samples per symbol
 B = 4;  % bits per symbol
-R = 2;  % coded bits per data bit
-L = 3036; % packet size in symbols
+L = 3036; % packet size in bits
+
+% Coding constants
+coded = true; % enable
+R = 2;        % coded bits per data bit
 interleaveA = 132; interleaveB = R*23; % Factors of interleaving
 
-coded = true;
 if ~coded, R=1; end;
 
 
