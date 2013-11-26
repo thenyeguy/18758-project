@@ -9,12 +9,12 @@ maxL = 10000; % max samples in output signal
 
 
 % Transmit constants
-T = 8;  % samples per symbol
+T = 4;  % samples per symbol
 B = 3;  % bits per symbol
 L = 3036; % packet size in bits
 
 % Coding constants
-coded = false; % enable
+coded = true; % enable
 R = 2;        % coded bits per data bit
 interleaveA = 132; interleaveB = R*23; % Factors of interleaving
 
@@ -31,7 +31,7 @@ pulse = pulse/norm(pulse);
 pilotBits = [0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, ...
              0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1];
 
-pilotT = 40;
+pilotT = 20;
 pilotPulse = ones(1,pilotT/2); pilotPulse = pilotPulse/norm(pilotPulse);
 
 pilot = upsample(2*pilotBits-1,pilotT);

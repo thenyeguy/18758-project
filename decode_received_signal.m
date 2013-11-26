@@ -27,20 +27,26 @@ function [bits,detectedbits] = decode_received_signal(y, plots, len)
         title('Signal Spectra');
         xlabel('\omega'); ylabel('Spectral power (dB)');
     end
+    
+    
+    % THIS SHOULDN'T WORK WTF
+    % BUT IT DOES
+    % WHYYYYYY
+    y = conj(y);
+    
+    
+    % Perform carrier recove
+    ws = linspace(-pi/50,pi/50,2000);
+    [~,I] = max(abs(dtft(y, ws)));    
+    y = y .* exp(-1j*(1:length(y))*ws(I));
    
     
     % Determine offset
-    [corrs,lags] = xcorr(y,pilot);
+    [corrs,lags] = xcorr(y,pilot, 500);
     [~,I] = max(abs(corrs));
     delta = lags(I);
     
     if plots; figure(2); scatter(delta,0,'r.'); end
-    
-    
-    % Perform carrier recove
-    ws = linspace(-pi/50,pi/50,5000);
-    [~,I] = max(abs(dtft(y, ws)));    
-    y = y .* exp(-1j*(1:length(y))*ws(I));
     
     
     % Match filter and sample the pilot to equalize
@@ -60,7 +66,7 @@ function [bits,detectedbits] = decode_received_signal(y, plots, len)
         subplot(4,1,2); hold on;
         plot(imag(y),'g'); plot(real(y));
         legend('y^Q', 'y^I');
-        title('Windowed signal');
+        title('Windowed signal, post-carrier recovery');
         stem(0,'marker','none');
     end
     
