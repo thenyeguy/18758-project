@@ -1,13 +1,13 @@
-function [bits,detectedbits] = decode_received_signal(y, len, plots)
+function [bits,detectedbits] = decode_received_signal(y, plots, len)
     % Load constant factors and prep to display
     constants;
     
     % Fill variables
     if nargin < 2
-        len = L; %#ok
+        plots = false;
     end
     if nargin < 3
-        plots = false;
+        len = L; %#ok
     end
     
     
@@ -34,15 +34,19 @@ function [bits,detectedbits] = decode_received_signal(y, len, plots)
     [~,I] = max(abs(corrs));
     delta = lags(I);
     
-    if plots; figure(2); scatter(delta,y(delta),'r.'); end
+    if plots; figure(2); scatter(delta,0,'r.'); end
     
     
-    % Regrab pilot sequence, then match filter and sample
+    % Perform carrier recove
+    ws = linspace(-pi/50,pi/50,5000);
+    [~,I] = max(abs(dtft(y, ws)));    
+    y = y .* exp(-1j*(1:length(y))*ws(I));
+    
+    
+    % Match filter and sample the pilot to equalize
     p = y(delta+1 : delta + length(pilot));
     p = filter(pilotPulse(end:-1:1), 1, p); %#ok
     zs = p(pilotT/2:pilotT:end);
-    
-    % Determine EQ from there
     ps = 2*pilotBits - 1;
     eq = (ps*transpose(zs))/(ps*ps');
 
@@ -83,7 +87,7 @@ function [bits,detectedbits] = decode_received_signal(y, len, plots)
         plot(yq, 'g'); plot(yi);
         stem(T:T:length(y), zq, 'cx');
         stem(T:T:length(y), zi, 'ro');
-        title('Filtered signal, inphase only');
+        title('Filtered signal');
         legend('y^Q', 'y^I', 'z^Q', 'z^I');
         stem(0,'marker','none');
         
@@ -101,24 +105,24 @@ function [bits,detectedbits] = decode_received_signal(y, len, plots)
                 imag(exp(2*pi*1j*(0:(2^B-1))/2^B)), ...
                 'ro', 'MarkerFaceColor','r');
         axis([-1.5 1.5 -1.5 1.5]); axis square;
-        title('Signal space');
-        xlabel('x^I'); ylabel('x^Q');
+        title('Equalized signal space');
+        xlabel('z^I'); ylabel('z^Q');
     end
     
     
     % Hard detect the coded symbols from MPSK
     M = 2^B;
     angs = angle(zi + 1j*zq);
-    decs = mod(round(angs*M/(2*pi)),16);
-    detectedbits = de2bi(decs,4)';
-    detectedbits = detectedbits(:)';
+    decs = mod(round(angs*M/(2*pi)),M);
+    detectedbits = de2bi(decs,B).';
+    detectedbits = detectedbits(:).';
     
     
     % Correct the coded bits using viterbi
     if coded
         % Deinterleave the received bits
-        detectedbits = reshape(detectedbits,interleaveB,interleaveA)';
-        detectedbits = detectedbits(:)';
+        detectedbits = reshape(detectedbits,interleaveB,interleaveA).';
+        detectedbits = detectedbits(:).';
         
         
         % Create empty trelli

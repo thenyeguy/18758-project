@@ -49,8 +49,8 @@ function [x,codedbits] = create_transmit_signal(bits, plots)
         end
         
         % Interleave the coded bits
-        codedbits = reshape(codedbits,interleaveA,interleaveB)';
-        codedbits = codedbits(:)';
+        codedbits = reshape(codedbits,interleaveA,interleaveB).';
+        codedbits = codedbits(:).';
     else
         codedbits = bits;
     end
@@ -64,7 +64,7 @@ function [x,codedbits] = create_transmit_signal(bits, plots)
     % Map coded bits to symbols
     % Uses 16PSK
     M = 2^B;
-    ints = bi2de(reshape(codedbits,B,length(codedbits)/B)')';
+    ints = bi2de(reshape(codedbits,B,length(codedbits)/B).').';
     syms = exp(2*pi*1j*ints/M);
     
     
@@ -100,7 +100,7 @@ function [x,codedbits] = create_transmit_signal(bits, plots)
     end
     
     % Normaliae x to maximize power
-    x = x/max(x);
+    x = x/max(abs(x));
     
     % Error if x is too large
     if(length(x) > maxL)

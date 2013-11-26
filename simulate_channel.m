@@ -11,6 +11,6 @@ function y = simulate_channel(x)
     y = y./randi(atten);
     
     % Multiply by random angle
-    angle = pi/4*rand();
+    angle = pi/2*rand();
     y = y*exp(1j*angle);
 end
