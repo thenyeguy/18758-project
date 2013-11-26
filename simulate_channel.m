@@ -13,4 +13,8 @@ function y = simulate_channel(x)
     % Multiply by random angle
     angle = pi/2*rand();
     y = y*exp(1j*angle);
+    
+    % Add carrier offset
+    f = 1/25000;
+    y = y .* exp(1j*2*pi*(1:length(y))*f);
 end

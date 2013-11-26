@@ -1,4 +1,4 @@
-function bits = decode_received_signal(y, plots, toconj, len)
+function bits = decode_received_signal(y, plots, len)
     % Load constant factors and prep to display
     constants;
     
@@ -6,7 +6,7 @@ function bits = decode_received_signal(y, plots, toconj, len)
     if nargin < 2
         plots = false;
     end
-    if nargin < 4
+    if nargin < 3
         len = L; %#ok
     end
     
@@ -29,19 +29,8 @@ function bits = decode_received_signal(y, plots, toconj, len)
     end
     
     
-    % THIS SHOULDN'T WORK WTF
-    % BUT IT DOES
-    % WHYYYYYY
-    if nargin < 3
-        toconj = true;
-    end
-    if toconj
-        y = conj(y);
-    end
-    
-    
-    % Perform carrier recovery
-    ws = linspace(-pi/50,pi/50,3000);
+    % Perform carrier recovery, using DTFT to estimate frequency offset
+    ws = linspace(-pi/1000,pi/1000,100);
     [~,I] = max(abs(dtft(y, ws)));    
     y = y .* exp(-1j*(1:length(y))*ws(I));
    
