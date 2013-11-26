@@ -1,4 +1,4 @@
-function [x,codedbits] = create_transmit_signal(bits, plots)
+function x = create_transmit_signal(bits, plots)
     % Load constants
     constants;
     

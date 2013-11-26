@@ -1,4 +1,4 @@
-function [bits,detectedbits] = decode_received_signal(y, plots, len)
+function bits = decode_received_signal(y, plots, toconj, len)
     % Load constant factors and prep to display
     constants;
     
@@ -6,7 +6,7 @@ function [bits,detectedbits] = decode_received_signal(y, plots, len)
     if nargin < 2
         plots = false;
     end
-    if nargin < 3
+    if nargin < 4
         len = L; %#ok
     end
     
@@ -32,11 +32,16 @@ function [bits,detectedbits] = decode_received_signal(y, plots, len)
     % THIS SHOULDN'T WORK WTF
     % BUT IT DOES
     % WHYYYYYY
-    y = conj(y);
+    if nargin < 3
+        toconj = true;
+    end
+    if toconj
+        y = conj(y);
+    end
     
     
-    % Perform carrier recove
-    ws = linspace(-pi/50,pi/50,2000);
+    % Perform carrier recovery
+    ws = linspace(-pi/50,pi/50,3000);
     [~,I] = max(abs(dtft(y, ws)));    
     y = y .* exp(-1j*(1:length(y))*ws(I));
    
@@ -214,6 +219,25 @@ function [bits,detectedbits] = decode_received_signal(y, plots, len)
 
             % Update the state
             state = [state(2) bits(ii)];
+        end
+        
+        
+        if plots
+            errors = find(codedbits ~= detectedbits);
+            
+            figure(4); clf(4);
+            subplot(3,1,1); hold on;
+            stem(detectedbits);
+            title('Hard detected bits');
+            
+            subplot(3,1,2); hold on;
+            stem(codedbits); stem(errors, codedbits(errors), 'r');
+            legend('Correct bits', 'Corrected bits');
+            title('Coded bits after error correction');
+            
+            subplot(3,1,3); hold on;
+            stem(bits);
+            title('Decoded bits');
         end
     else
         bits = detectedbits;
