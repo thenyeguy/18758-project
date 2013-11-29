@@ -30,7 +30,7 @@ function bits = decode_received_signal(y, plots, len)
     
     
     % Perform carrier recovery, using DTFT to estimate frequency offset
-    ws = linspace(-pi/500,pi/500,500);
+    ws = linspace(-pi/1000,pi/1000,1500);
     [~,I] = max(abs(dtft(y, ws)));    
     y = y .* exp(-1j*(1:length(y))*ws(I));
    
