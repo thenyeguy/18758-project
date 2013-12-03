@@ -122,13 +122,40 @@ the resulting offsets it introduces into my data.
 
 
 
+\section*{MATLAB Implementation}
 
+On the following pages, I have attached the code used to implement my
+communications system. There are three files. The first is {\tt constants.m},
+and contains just a set of constants referenced in my modulator and demodulator.
+The second is {\tt generate transmit signal.m}, and contains a function that
+given a bit sequence will return a transmit signal. Finally, {\tt
+decode received signal.m} takes in a received signal and performs recovers the
+original message in the transmit signal.
+
+\pagebreak
+\lstinputlisting{../constants.m}
+
+\pagebreak
+\lstinputlisting{../create_transmit_signal.m}
+
+\pagebreak
+\lstinputlisting{../decode_received_signal.m}
+
+
+
+\pagebreak
 \section*{Operational Figures}
 
 On the following pages, I have attached sample figures demonstrating my the
 functioning of my system. I have shown a higher-than-average noise sample
 demonstrating that even under harder transmit criteria, I receive less than
 a .3\% error rate.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1.0\textwidth]{figures/receivedimage.png}
+    \caption{Comparison of transmitted and received images}
+\end{figure}
 
 \begin{figure}
     \centering
@@ -153,33 +180,6 @@ a .3\% error rate.
     \includegraphics[width=1.0\textwidth]{figures/receivedbits.pdf}
     \caption{Received signal bits, and decoding}
 \end{figure}
-
-\begin{figure}
-    \centering
-    \includegraphics[width=0.7\textwidth]{figures/receivedimage.png}
-    \caption{Comparison of transmitted and received images}
-\end{figure}
-
-
-
-\section*{MATLAB Implementation}
-
-On the following pages, I have attached the code used to implement my
-communications system. There are three files. The first is \verb|constants.m|,
-and contains just a set of constants referenced in my modulator and demodulator.
-The second is \verb|generate_transmit_signal.m|, and contains a function that
-given a bit sequence will return a transmit signal. Finally,
-\verb|decode_received_signal.m| takes in a received signal and performs recovers
-the original message in the transmit signal.
-
-\pagebreak
-\lstinputlisting{../constants.m}
-
-\pagebreak
-\lstinputlisting{../create_transmit_signal.m}
-
-\pagebreak
-\lstinputlisting{../decode_received_signal.m}
 
 
 
