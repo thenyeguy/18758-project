@@ -41,7 +41,7 @@
 
 For my final project, I designed a system fairly similar to what was shown in
 lectures. For coding, I used a rate-1/2 convolution code with 4 states. After
-codig, the symbol bits are interleaved by a factor of 132 (chosen to be a large
+coding, the symbol bits are interleaved by a factor of 132 (chosen to be a large
 integral factor of my packet size). Again, testing of my system has demonstrated
 that this coding scheme sufficiently decouples error events and allows robust
 correction given my channel.
@@ -110,7 +110,8 @@ The final difference was in how I performed carrier recovery. While we were
 encouraged to use a BPSK pilot sequence, I found this didn't provide sufficient
 resolution to find the carrier offset frequency. I instead just used the entire
 received signal, and bandlimited the region I search for the peak in the
-frequency domain. This proved surprisingly effective, and so I stuck with it.
+frequency domain. This proved very effective, as the carrier offset is the only
+strong low frequency presense in my signal.
 
 The other difficulties I ran into were simply implementation details. Until this
 project, I had never used the MATLAB \verb|'| operator to transpose complex
